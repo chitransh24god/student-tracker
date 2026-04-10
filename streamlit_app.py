@@ -5,8 +5,6 @@ from datetime import datetime, timedelta
 import plotly.graph_objects as go
 import plotly.express as px
 from sqlalchemy import create_engine, text
-from models import User, Subject, Attendance, Engagement, db
-from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
 import os
 
