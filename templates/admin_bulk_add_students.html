@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow-lg" style="border-radius: 15px; border: none;">
+                <div class="card-header" style="background: linear-gradient(135deg, #F59E0B 0%, #FF9500 100%); color: white; border-radius: 15px 15px 0 0;">
+                    <h3 class="mb-0"><i class="fas fa-upload"></i> Bulk Upload Students (CSV)</h3>
+                </div>
+                
+                <div class="card-body p-4">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'danger' else 'success' if category == 'success' else 'warning' if category == 'warning' else 'info' }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        <div class="mb-4">
+                            <label for="file" class="form-label" style="font-weight: 600; color: #1F2937;">Select CSV File</label>
+                            <input type="file" class="form-control form-control-lg" id="file" name="file" 
+                                   accept=".csv" required 
+                                   style="border: 2px solid #E5E7EB; border-radius: 8px; padding: 12px;">
+                            <div class="invalid-feedback">
+                                Please select a CSV file.
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-5">
+                            <button type="submit" class="btn btn-lg" style="background: linear-gradient(135deg, #F59E0B 0%, #FF9500 100%); color: white; font-weight: 600; border: none; border-radius: 8px;">
+                                <i class="fas fa-cloud-upload-alt"></i> Upload CSV
+                            </button>
+                            <a href="{{ url_for('admin_students') }}" class="btn btn-lg" style="background: #F3F4F6; color: #1F2937; font-weight: 600; border: 2px solid #E5E7EB; border-radius: 8px;">
+                                <i class="fas fa-arrow-left"></i> Back to Students
+                            </a>
+                        </div>
+                    </form>
+
+                    <hr class="my-5">
+
+                    <!-- CSV Format Instructions -->
+                    <div class="mb-4">
+                        <h5 style="color: #1F2937; font-weight: 700;">📋 CSV Format Instructions</h5>
+                        <p class="text-muted">Your CSV file must have exactly 3 columns with the following headers:</p>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-sm" style="background: #F9FAFB; border: 2px solid #E5E7EB; border-radius: 8px;">
+                                <thead style="background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);">
+                                    <tr>
+                                        <th style="color: #1F2937; font-weight: 700; width: 20%;">Column</th>
+                                        <th style="color: #1F2937; font-weight: 700;">Description</th>
+                                        <th style="color: #1F2937; font-weight: 700; width: 20%;">Example</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="color: #1F2937; font-weight: 600;">name</td>
+                                        <td style="color: #6B7280;">Full name of the student</td>
+                                        <td style="color: #6B7280;">John Doe</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="color: #1F2937; font-weight: 600;">email</td>
+                                        <td style="color: #6B7280;">Unique email address</td>
+                                        <td style="color: #6B7280;">john@example.com</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="color: #1F2937; font-weight: 600;">password</td>
+                                        <td style="color: #6B7280;">Initial password (min 6 characters)</td>
+                                        <td style="color: #6B7280;">password123</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Example CSV -->
+                    <div class="mb-4">
+                        <h5 style="color: #1F2937; font-weight: 700;">📄 Example CSV Content</h5>
+                        <div style="background: #1F2937; color: #10B981; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 13px; overflow-x: auto;">
+                            <pre style="margin: 0; color: #D1D5DB;">name,email,password
+John Doe,john@example.com,password123
+Jane Smith,jane@example.com,password456
+Alex Johnson,alex@example.com,password789</pre>
+                        </div>
+                    </div>
+
+                    <!-- Download Template -->
+                    <div class="alert alert-info" style="border-radius: 8px; background: #DBEAFE; border: 2px solid #3B82F6; color: #1E40AF;">
+                        <h6 class="mb-2"><i class="fas fa-info-circle"></i> Tips:</h6>
+                        <ul class="mb-0 ps-3">
+                            <li>Download the template CSV file below to get started</li>
+                            <li>Emails must be unique (duplicates will be skipped)</li>
+                            <li>All fields are required</li>
+                            <li>Rows with missing data will be skipped</li>
+                            <li>You'll see a report of how many were added/skipped</li>
+                        </ul>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="javascript:downloadTemplate()" class="btn btn-primary" style="background: linear-gradient(135deg, #3B82F6 0%, #06B6D4 100%); border: none; border-radius: 8px; font-weight: 600;">
+                            <i class="fas fa-download"></i> Download Template CSV
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <div class="card" style="border: 2px solid #E5E7EB; border-radius: 10px; background: linear-gradient(135deg, #ECFDF5 0%, #F0FDF4 100%);">
+                    <div class="card-body p-4">
+                        <h6 style="color: #065F46; font-weight: 700; margin-bottom: 10px;">
+                            <i class="fas fa-check-circle"></i> Quick Start
+                        </h6>
+                        <ol style="color: #047857; margin-bottom: 0;">
+                            <li>Click "Download Template CSV" to get the format right</li>
+                            <li>Add your student data to the spreadsheet</li>
+                            <li>Save as CSV format (.csv)</li>
+                            <li>Upload it here</li>
+                            <li>Done! All students will be added</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.querySelectorAll('.needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+
+// Download template function
+function downloadTemplate() {
+    const csv = 'name,email,password\nJohn Doe,john@example.com,password123\nJane Smith,jane@example.com,password456\nAlex Johnson,alex@example.com,password789';
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'students_template.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+</script>
+
+<style>
+.form-control-lg:focus {
+    border-color: #F59E0B !important;
+    box-shadow: 0 0 0 0.2rem rgba(245, 158, 11, 0.25) !important;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+pre {
+    color: #10B981 !important;
+}
+</style>
+{% endblock %}

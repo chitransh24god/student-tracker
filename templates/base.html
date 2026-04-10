@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Student Tracker{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% if session.user_id %}
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <span class="logo">📊 Student Tracker</span>
+            </div>
+            <div class="navbar-menu">
+                <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+                {% if session.user_role in ['faculty', 'teacher', 'admin'] %}
+                <a href="{{ url_for('attendance') }}" class="nav-link">Add Attendance</a>
+                <a href="{{ url_for('engagement') }}" class="nav-link">Add Engagement</a>
+                <a href="{{ url_for('students') }}" class="nav-link">Students</a>
+                {% if session.user_role == 'admin' %}
+                <!-- Admin Dropdown Menu - Admin Only -->
+                <div class="nav-dropdown">
+                    <button class="nav-link dropdown-toggle" onclick="toggleAdminMenu()" style="border: none; background: none; cursor: pointer;">
+                        ⚙️ Admin
+                    </button>
+                    <div class="dropdown-menu" id="adminMenu" style="display: none;">
+                        <a href="{{ url_for('admin_add_student') }}" class="dropdown-item">➕ Add Student</a>
+                        <a href="{{ url_for('admin_students') }}" class="dropdown-item">👥 Manage Students</a>
+                        <a href="{{ url_for('admin_bulk_add_students') }}" class="dropdown-item">📤 Bulk Upload</a>
+                        <a href="{{ url_for('admin_teachers') }}" class="dropdown-item">👨‍🏫 Manage Teachers</a>
+                    </div>
+                </div>
+                {% endif %}
+                {% endif %}
+                <a href="{{ url_for('export') }}" class="nav-link">Export Data</a>
+                <a href="{{ url_for('settings') }}" class="nav-link">Settings</a>
+                <a href="{{ url_for('logout') }}" class="nav-link logout-btn">Logout</a>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <!-- Flash Messages -->
+    <div class="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible">
+                    {{ message }}
+                    <button type="button" class="close-btn" onclick="this.parentElement.style.display='none';">&times;</button>
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2024 Student Attendance & Engagement Tracker. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    
+    <script>
+    // Admin dropdown toggle
+    function toggleAdminMenu() {
+        const menu = document.getElementById('adminMenu');
+        if (menu) {
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+    }
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        const adminMenu = document.getElementById('adminMenu');
+        const toggleBtn = event.target.closest('.dropdown-toggle');
+        if (!toggleBtn && adminMenu) {
+            adminMenu.style.display = 'none';
+        }
+    });
+    </script>
+    
+    <style>
+    .nav-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .dropdown-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: white;
+        border: 2px solid #E5E7EB;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        min-width: 200px;
+        z-index: 1000;
+        margin-top: 8px;
+    }
+    
+    .dropdown-item {
+        display: block;
+        padding: 12px 16px;
+        color: #1F2937;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border-bottom: 1px solid #E5E7EB;
+    }
+    
+    .dropdown-item:last-child {
+        border-bottom: none;
+    }
+    
+    .dropdown-item:hover {
+        background: linear-gradient(135deg, #DBEAFE 0%, #E0F2FE 100%);
+        color: #1E40AF;
+        padding-left: 20px;
+    }
+    </style>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

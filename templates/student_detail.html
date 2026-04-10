@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}{{ student.name }} - Student Tracker{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="back-link">
+        <a href="{{ url_for('students') }}">&larr; Back to Students</a>
+    </div>
+
+    <div class="page-header">
+        <h1>{{ student.name }}</h1>
+        <p>{{ student.email }}</p>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📚</div>
+            <div class="stat-content">
+                <h3>Total Classes</h3>
+                <p class="stat-value">{{ total_classes }}</p>
+            </div>
+        </div>
+        <div class="stat-card success-bg">
+            <div class="stat-icon">✓</div>
+            <div class="stat-content">
+                <h3>Classes Attended</h3>
+                <p class="stat-value">{{ attended }}</p>
+            </div>
+        </div>
+        <div class="stat-card important">
+            <div class="stat-icon">📈</div>
+            <div class="stat-content">
+                <h3>Attendance %</h3>
+                <p class="stat-value">{{ attendance_percentage }}%</p>
+            </div>
+        </div>
+        <div class="stat-card warning-bg">
+            <div class="stat-icon">💬</div>
+            <div class="stat-content">
+                <h3>Engagement Records</h3>
+                <p class="stat-value">{{ engagement_records|length }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs for Attendance and Engagement -->
+    <div class="tabs">
+        <div class="tab-buttons">
+            <button class="tab-btn active" data-tab="attendance">Attendance Records</button>
+            <button class="tab-btn" data-tab="engagement">Engagement Records</button>
+        </div>
+
+        <!-- Attendance Tab -->
+        <div id="attendance" class="tab-content active">
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Subject</th>
+                                <th>Status</th>
+                                <th>Recorded</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if attendance_records %}
+                                {% for record in attendance_records %}
+                                <tr>
+                                    <td>{{ record.date.strftime('%d %b %Y') }}</td>
+                                    <td>{{ record.subject.name }}</td>
+                                    <td>
+                                        <span class="badge {% if record.status == 'Present' %}badge-success{% else %}badge-danger{% endif %}">
+                                            {{ record.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ record.created_at.strftime('%d %b %Y') }}</td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 20px; color: #999;">
+                                    No attendance records
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Engagement Tab -->
+        <div id="engagement" class="tab-content">
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Subject</th>
+                                <th>Tag</th>
+                                <th>Note</th>
+                                <th>Recorded</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if engagement_records %}
+                                {% for record in engagement_records %}
+                                <tr>
+                                    <td>{{ record.date.strftime('%d %b %Y') }}</td>
+                                    <td>{{ record.subject.name }}</td>
+                                    <td>
+                                        <span class="badge badge-primary">{{ record.tag }}</span>
+                                    </td>
+                                    <td>
+                                        {% if record.note %}
+                                            <small>{{ record.note[:50] }}{% if record.note|length > 50 %}...{% endif %}</small>
+                                        {% else %}
+                                            <span style="color: #999;">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ record.created_at.strftime('%d %b %Y') }}</td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">
+                                    No engagement records
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const tabName = this.dataset.tab;
+            
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            this.classList.add('active');
+        });
+    });
+</script>
+{% endblock %}

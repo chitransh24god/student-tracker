@@ -1,0 +1,22 @@
+{
+  "name": "fine-jewels-website",
+  "version": "1.0.0",
+  "description": "Premium jewellery shop website - Fine Jewels",
+  "author": "Fine Jewels",
+  "license": "MIT",
+  "keywords": [
+    "jewellery",
+    "website",
+    "responsive",
+    "ecommerce",
+    "premium"
+  ],
+  "scripts": {
+    "dev": "open index.html",
+    "build": "echo 'No build step required - static site'"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  }
+}

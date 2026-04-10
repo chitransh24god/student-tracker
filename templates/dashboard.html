@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Student Tracker{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="dashboard-header">
+        <h1>Welcome, {{ user.name }}!</h1>
+        <p>Your attendance and engagement dashboard</p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        {% if session.user_role in ['faculty', 'teacher', 'admin'] %}
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-content">
+                    <h3>Total Students</h3>
+                    <p class="stat-value">{{ stats.total_students }}</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👨‍🏫</div>
+                <div class="stat-content">
+                    <h3>Total Teachers</h3>
+                    <p class="stat-value">{{ stats.total_teachers }}</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📋</div>
+                <div class="stat-content">
+                    <h3>Attendance Records</h3>
+                    <p class="stat-value">{{ stats.total_attendance_records }}</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💬</div>
+                <div class="stat-content">
+                    <h3>Engagement Records</h3>
+                    <p class="stat-value">{{ stats.total_engagement_records }}</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📚</div>
+                <div class="stat-content">
+                    <h3>Total Subjects</h3>
+                    <p class="stat-value">{{ stats.total_subjects }}</p>
+                </div>
+            </div>
+        {% else %}
+            <div class="stat-card">
+                <div class="stat-icon">📚</div>
+                <div class="stat-content">
+                    <h3>Total Classes</h3>
+                    <p class="stat-value">{{ stats.total_classes }}</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✓</div>
+                <div class="stat-content">
+                    <h3>Classes Attended</h3>
+                    <p class="stat-value">{{ stats.attended }}</p>
+                </div>
+            </div>
+            <div class="stat-card important">
+                <div class="stat-icon">📈</div>
+                <div class="stat-content">
+                    <h3>Attendance %</h3>
+                    <p class="stat-value">{{ stats.attendance_percentage }}%</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💬</div>
+                <div class="stat-content">
+                    <h3>Engagement Records</h3>
+                    <p class="stat-value">{{ stats.total_engagement }}</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-grid">
+        <div class="chart-card">
+            <h2>Attendance by Subject</h2>
+            <div class="chart-container">
+                <canvas id="attendanceChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <h2>Monthly Attendance Trend</h2>
+            <div class="chart-container">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <h2>Engagement Distribution</h2>
+            <div class="chart-container">
+                <canvas id="engagementChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Fetch and render charts
+document.addEventListener('DOMContentLoaded', function() {
+    renderAttendanceChart();
+    renderTrendChart();
+    renderEngagementChart();
+});
+
+function renderAttendanceChart() {
+    fetch('{{ url_for("api_attendance_by_subject") }}')
+        .then(response => {
+            if (!response.ok) throw new Error('API error: ' + response.status);
+            return response.json();
+        })
+        .then(data => {
+            if (!data.labels || data.labels.length === 0) {
+                document.getElementById('attendanceChart').parentElement.innerHTML = 
+                    '<p style="text-align: center; color: #999; padding: 40px;">No attendance data available</p>';
+                return;
+            }
+            const ctx = document.getElementById('attendanceChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Attendance Percentage (%)',
+                        data: data.percentages,
+                        backgroundColor: [
+                            '#4F46E5',
+                            '#06B6D4',
+                            '#10B981',
+                            '#F59E0B',
+                            '#EF4444',
+                            '#8B5CF6'
+                        ],
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error loading attendance chart:', error);
+            document.getElementById('attendanceChart').parentElement.innerHTML = 
+                '<p style="text-align: center; color: #f00; padding: 40px;">Error loading chart data</p>';
+        });
+}
+
+function renderTrendChart() {
+    fetch('{{ url_for("api_monthly_trend") }}')
+        .then(response => {
+            if (!response.ok) throw new Error('API error: ' + response.status);
+            return response.json();
+        })
+        .then(data => {
+            if (!data.labels || data.labels.length === 0) {
+                document.getElementById('trendChart').parentElement.innerHTML = 
+                    '<p style="text-align: center; color: #999; padding: 40px;">No trend data available</p>';
+                return;
+            }
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Attendance Percentage (%)',
+                        data: data.percentages,
+                        borderColor: '#4F46E5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 6,
+                        pointBackgroundColor: '#4F46E5',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                usePointStyle: true
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error loading trend chart:', error);
+            document.getElementById('trendChart').parentElement.innerHTML = 
+                '<p style="text-align: center; color: #f00; padding: 40px;">Error loading chart data</p>';
+        });
+}
+
+function renderEngagementChart() {
+    fetch('{{ url_for("api_engagement_distribution") }}')
+        .then(response => {
+            if (!response.ok) throw new Error('API error: ' + response.status);
+            return response.json();
+        })
+        .then(data => {
+            if (!data.labels || data.labels.length === 0) {
+                document.getElementById('engagementChart').parentElement.innerHTML = 
+                    '<p style="text-align: center; color: #999; padding: 40px;">No engagement data yet</p>';
+                return;
+            }
+            const ctx = document.getElementById('engagementChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        data: data.counts,
+                        backgroundColor: [
+                            '#4F46E5',
+                            '#06B6D4',
+                            '#10B981',
+                            '#F59E0B',
+                            '#EF4444',
+                            '#8B5CF6',
+                            '#EC4899'
+                        ],
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    maxHeight: 500,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 12,
+                                font: {
+                                    size: 13
+                                },
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                boxWidth: 12,
+                                boxHeight: 12,
+                                maxWidth: 400
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error loading engagement chart:', error);
+            document.getElementById('engagementChart').parentElement.innerHTML = 
+                '<p style="text-align: center; color: #f00; padding: 40px;">Error loading chart data</p>';
+        });
+}
+</script>
+{% endblock %}

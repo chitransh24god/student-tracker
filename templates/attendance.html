@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Add Attendance - Student Tracker{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Record Attendance</h1>
+        <p>Mark student attendance for a class</p>
+    </div>
+
+    <div class="form-card">
+        <form method="POST" class="form-layout" id="attendanceForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="student_id">Student *</label>
+                    <select id="student_id" name="student_id" class="form-control" required>
+                        <option value="">Select a student</option>
+                        {% for student in students %}
+                        <option value="{{ student.id }}">{{ student.name }} ({{ student.email }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="subject_id">Subject *</label>
+                    <select id="subject_id" name="subject_id" class="form-control" required>
+                        <option value="">Select a subject</option>
+                        {% for subject in subjects %}
+                        <option value="{{ subject.id }}">{{ subject.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="date">Date *</label>
+                    <input type="date" id="date" name="date" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="status">Status *</label>
+                    <select id="status" name="status" class="form-control" required>
+                        <option value="">Select status</option>
+                        <option value="Present">Present</option>
+                        <option value="Absent">Absent</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Record Attendance</button>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Recent Attendance Records -->
+    <div class="table-card" style="margin-top: 40px;">
+        <h2>Recent Attendance Records</h2>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Subject</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if recent_records %}
+                        {% for record in recent_records %}
+                        <tr>
+                            <td>{{ record[0] }}</td>
+                            <td>{{ record[1] }}</td>
+                            <td>{{ record[2].strftime('%b %d, %Y') }}</td>
+                            <td>
+                                <span class="badge {% if record[3] == 'Present' %}badge-success{% else %}badge-danger{% endif %}">
+                                    {{ record[3] }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: #999;">No attendance records yet</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Set today's date as default
+    document.getElementById('date').valueAsDate = new Date();
+
+    // Form validation
+    document.getElementById('attendanceForm').addEventListener('submit', function(e) {
+        const student = document.getElementById('student_id').value;
+        const subject = document.getElementById('subject_id').value;
+        const date = document.getElementById('date').value;
+        const status = document.getElementById('status').value;
+
+        if (!student || !subject || !date || !status) {
+            e.preventDefault();
+            alert('Please fill all required fields');
+        }
+    });
+</script>
+{% endblock %}

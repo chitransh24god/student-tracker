@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Student Tracker{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Account Settings</h1>
+        <p>Manage your account preferences</p>
+    </div>
+
+    <div class="settings-layout">
+        <!-- Profile Card -->
+        <div class="form-card">
+            <h2>Profile Information</h2>
+            <div class="settings-item">
+                <label>Full Name</label>
+                <p class="setting-value">{{ user.name }}</p>
+            </div>
+            <div class="settings-item">
+                <label>Email</label>
+                <p class="setting-value">{{ user.email }}</p>
+            </div>
+            <div class="settings-item">
+                <label>Role</label>
+                <p class="setting-value">
+                    <span class="badge {% if user.role == 'faculty' %}badge-primary{% else %}badge-info{% endif %}">
+                        {{ user.role|capitalize }}
+                    </span>
+                </p>
+            </div>
+            <div class="settings-item">
+                <label>Member Since</label>
+                <p class="setting-value">{{ user.created_at.strftime('%d %B %Y') }}</p>
+            </div>
+        </div>
+
+        <!-- About Application -->
+        <div class="info-card">
+            <h2>About</h2>
+            <p>
+                <strong>Student Attendance & Engagement Tracker</strong> is a comprehensive system designed
+                for educational institutions to track and manage student attendance and engagement records.
+            </p>
+            <h3>Features:</h3>
+            <ul>
+                <li>Secure authentication system with role-based access</li>
+                <li>Attendance tracking and management</li>
+                <li>Engagement recording with custom tags</li>
+                <li>Comprehensive dashboard with analytics</li>
+                <li>Data export functionality</li>
+                <li>Professional, responsive user interface</li>
+            </ul>
+            <p style="margin-top: 20px;">
+                <strong>Version:</strong> 1.0.0<br>
+                <strong>Last Updated:</strong> 2024
+            </p>
+        </div>
+
+        <!-- Keyboard Shortcuts -->
+        <div class="info-card">
+            <h2>Quick Help</h2>
+            <table class="shortcuts-table">
+                <tr>
+                    <td><code>Dashboard</code></td>
+                    <td>View attendance and engagement statistics</td>
+                </tr>
+                <tr>
+                    <td><code>Add Attendance</code></td>
+                    <td>Record student attendance (Faculty only)</td>
+                </tr>
+                <tr>
+                    <td><code>Add Engagement</code></td>
+                    <td>Record student engagement notes (Faculty only)</td>
+                </tr>
+                <tr>
+                    <td><code>Export Data</code></td>
+                    <td>Download your records as CSV</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+.settings-layout {
+    display: grid;
+    gap: 20px;
+}
+
+.settings-item {
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.settings-item:last-child {
+    border-bottom: none;
+}
+
+.settings-item label {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+.setting-value {
+    color: #666;
+    margin: 0;
+}
+
+.shortcuts-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.shortcuts-table tr {
+    border-bottom: 1px solid #eee;
+}
+
+.shortcuts-table td {
+    padding: 12px 0;
+}
+
+.shortcuts-table code {
+    background: #f5f5f5;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    color: #4F46E5;
+    font-weight: 500;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Students - Student Tracker{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Students</h1>
+        <p>View and manage all student records</p>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="controls-card">
+        <input 
+            type="text" 
+            id="searchInput" 
+            class="search-input" 
+            placeholder="Search students by name or email..."
+        >
+    </div>
+
+    <!-- Students Table -->
+    <div class="table-card">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Attendance Records</th>
+                        <th>Engagement Records</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if students.items %}
+                        {% for student in students.items %}
+                        <tr>
+                            <td>
+                                <strong>{{ student.name }}</strong>
+                            </td>
+                            <td>{{ student.email }}</td>
+                            <td>
+                                <span class="badge badge-info">{{ student.attendances|length }}</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-success">{{ student.engagements|length }}</span>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('student_detail', student_id=student.id) }}" class="btn-link">View Details</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 30px; color: #999;">
+                            No students found
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if students.pages > 1 %}
+    <div class="pagination">
+        {% if students.has_prev %}
+            <a href="{{ url_for('students', page=students.prev_num) }}" class="pagination-link">← Previous</a>
+        {% endif %}
+        
+        <span class="pagination-info">Page {{ students.page }} of {{ students.pages }}</span>
+        
+        {% if students.has_next %}
+            <a href="{{ url_for('students', page=students.next_num) }}" class="pagination-link">Next →</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        const searchTerm = this.value.toLowerCase();
+        const rows = document.querySelectorAll('.data-table tbody tr');
+        
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(searchTerm) ? '' : 'none';
+        });
+    });
+</script>
+{% endblock %}

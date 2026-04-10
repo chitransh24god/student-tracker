@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow-lg" style="border-radius: 15px; border: none;">
+                <div class="card-header" style="background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%); color: white; border-radius: 15px 15px 0 0;">
+                    <h3 class="mb-0"><i class="fas fa-user-plus"></i> Add New Student</h3>
+                </div>
+                
+                <div class="card-body p-4">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'danger' else 'success' if category == 'success' else 'warning' if category == 'warning' else 'info' }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" class="needs-validation" novalidate>
+                        <div class="mb-4">
+                            <label for="name" class="form-label" style="font-weight: 600; color: #1F2937;">Full Name</label>
+                            <input type="text" class="form-control form-control-lg" id="name" name="name" 
+                                   placeholder="Enter student's full name" required 
+                                   style="border: 2px solid #E5E7EB; border-radius: 8px;">
+                            <div class="invalid-feedback">
+                                Please provide a valid name.
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="email" class="form-label" style="font-weight: 600; color: #1F2937;">Email Address</label>
+                            <input type="email" class="form-control form-control-lg" id="email" name="email" 
+                                   placeholder="Enter student's email" required 
+                                   style="border: 2px solid #E5E7EB; border-radius: 8px;">
+                            <div class="invalid-feedback">
+                                Please provide a valid email.
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="password" class="form-label" style="font-weight: 600; color: #1F2937;">Password</label>
+                            <input type="password" class="form-control form-control-lg" id="password" name="password" 
+                                   placeholder="Enter password (min 6 characters)" required minlength="6"
+                                   style="border: 2px solid #E5E7EB; border-radius: 8px;">
+                            <div class="invalid-feedback">
+                                Password must be at least 6 characters.
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-5">
+                            <button type="submit" class="btn btn-lg" style="background: linear-gradient(135deg, #10B981 0%, #14B8A6 100%); color: white; font-weight: 600; border: none; border-radius: 8px;">
+                                <i class="fas fa-save"></i> Add Student
+                            </button>
+                            <a href="{{ url_for('admin_students') }}" class="btn btn-lg" style="background: #F3F4F6; color: #1F2937; font-weight: 600; border: 2px solid #E5E7EB; border-radius: 8px;">
+                                <i class="fas fa-list"></i> View All Students
+                            </a>
+                        </div>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <div class="alert alert-info" style="border-radius: 8px; background: #DBEAFE; border: 2px solid #3B82F6; color: #1E40AF;">
+                        <h6 class="mb-2"><i class="fas fa-lightbulb"></i> Quick Tips:</h6>
+                        <ul class="mb-0 ps-3">
+                            <li>Use unique email addresses for each student</li>
+                            <li>Students can change their password in settings</li>
+                            <li>Or use bulk upload to add multiple students at once</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 text-center">
+                <a href="{{ url_for('admin_bulk_add_students') }}" class="btn btn-outline-primary" style="border-radius: 8px;">
+                    <i class="fas fa-upload"></i> Bulk Upload CSV
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.querySelectorAll('.needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+</script>
+
+<style>
+.form-control-lg:focus {
+    border-color: #3B82F6 !important;
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25) !important;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+</style>
+{% endblock %}

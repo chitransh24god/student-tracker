@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Add Engagement - Student Tracker{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Record Engagement</h1>
+        <p>Track student engagement and behavioral notes</p>
+    </div>
+
+    <div class="form-card">
+        <form method="POST" class="form-layout" id="engagementForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="student_id">Student *</label>
+                    <select id="student_id" name="student_id" class="form-control" required>
+                        <option value="">Select a student</option>
+                        {% for student in students %}
+                        <option value="{{ student.id }}">{{ student.name }} ({{ student.email }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="subject_id">Subject *</label>
+                    <select id="subject_id" name="subject_id" class="form-control" required>
+                        <option value="">Select a subject</option>
+                        {% for subject in subjects %}
+                        <option value="{{ subject.id }}">{{ subject.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="date">Date *</label>
+                    <input type="date" id="date" name="date" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="tag">Engagement Tag *</label>
+                    <select id="tag" name="tag" class="form-control" required>
+                        <option value="">Select a tag</option>
+                        {% for tag in tags %}
+                        <option value="{{ tag }}">{{ tag }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="note">Additional Notes</label>
+                <textarea 
+                    id="note" 
+                    name="note" 
+                    class="form-control textarea"
+                    placeholder="Enter any additional notes or observations..."
+                    rows="5"
+                ></textarea>
+                <small>Optional: Provide more context about the engagement record</small>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Record Engagement</button>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tag Reference -->
+    <div class="info-card">
+        <h2>Engagement Tags Guide</h2>
+        <div class="tag-guide">
+            <div class="tag-item">
+                <span class="tag-badge positive">Active Participation</span>
+                <p>Student actively participated in class discussions</p>
+            </div>
+            <div class="tag-item">
+                <span class="tag-badge neutral">Late Submission</span>
+                <p>Student submitted work after the deadline</p>
+            </div>
+            <div class="tag-item">
+                <span class="tag-badge negative">Disruptive</span>
+                <p>Student behavior disrupted the class</p>
+            </div>
+            <div class="tag-item">
+                <span class="tag-badge positive">Excellent Work</span>
+                <p>Student produced high-quality work</p>
+            </div>
+            <div class="tag-item">
+                <span class="tag-badge neutral">Improvement Needed</span>
+                <p>Student needs to work on certain areas</p>
+            </div>
+            <div class="tag-item">
+                <span class="tag-badge positive">Helps Peers</span>
+                <p>Student helped other students with their work</p>
+            </div>
+            <div class="tag-item">
+                <span class="tag-badge positive">Creative Thinking</span>
+                <p>Student demonstrated creative problem-solving</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Set today's date as default
+    document.getElementById('date').valueAsDate = new Date();
+
+    // Form validation
+    document.getElementById('engagementForm').addEventListener('submit', function(e) {
+        const student = document.getElementById('student_id').value;
+        const subject = document.getElementById('subject_id').value;
+        const date = document.getElementById('date').value;
+        const tag = document.getElementById('tag').value;
+
+        if (!student || !subject || !date || !tag) {
+            e.preventDefault();
+            alert('Please fill all required fields');
+        }
+    });
+</script>
+{% endblock %}
