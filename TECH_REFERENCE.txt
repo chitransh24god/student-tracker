@@ -1,0 +1,452 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                   🏗️ TECHNICAL ARCHITECTURE REFERENCE                       ║
+║                                                                              ║
+║                     For Developers & Customization                          ║
+║                                                                              ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+
+PROJECT STRUCTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+d:\Downloads\FIne Jewels\
+│
+├─ CORE APPLICATION
+│  ├─ app.py                 (500+ lines) Flask app with 20+ routes
+│  ├─ models.py              (100+ lines) SQLAlchemy ORM models
+│  └─ requirements.txt        Dependencies: Flask, SQLAlchemy, Werkzeug
+│
+├─ DATABASE
+│  ├─ attendance.db          SQLite database (auto-created)
+│  └─ functions in app.py    Database initialization
+│
+├─ FRONTEND
+│  ├─ templates/             10 HTML files (Jinja2 templates)
+│  │  ├─ base.html           Layout template with navigation
+│  │  ├─ login.html          Login page
+│  │  ├─ signup.html         Registration page
+│  │  ├─ dashboard.html      Main dashboard (colorful cards + charts)
+│  │  ├─ attendance.html     Attendance form
+│  │  ├─ engagement.html     Engagement notes form
+│  │  ├─ students.html       Student list
+│  │  ├─ student_detail.html  Student detail view (colorful cards)
+│  │  ├─ settings.html       User settings
+│  │  ├─ 404.html            Error page
+│  │  └─ 500.html            Server error page
+│  │
+│  └─ static/
+│     ├─ css/
+│     │  └─ styles.css       (1000+ lines) Light theme with gradients
+│     │                      15+ color variables, responsive design
+│     │
+│     └─ js/
+│        └─ script.js        (300+ lines) Chart rendering, form validation
+│
+├─ STARTUP SCRIPTS
+│  ├─ START.bat              Windows one-click launcher ⭐
+│  ├─ run.bat                Windows launcher alternative
+│  ├─ run.sh                 Mac/Linux launcher
+│  └─ run.py                 Universal Python launcher (500+ lines)
+│
+└─ DOCUMENTATION
+   ├─ README.md              Full documentation
+   ├─ DEVELOPMENT.md         Developer guide
+   ├─ QUICK_START.md         Quick reference
+   ├─ 00_READ_ME_FIRST.txt   First-time user guide
+   ├─ STARTUP_GUIDE.txt      Detailed startup instructions
+   ├─ STARTUP_CHECKLIST.txt  Verification checklist
+   ├─ CHANGES_SUMMARY.md     What's new
+   ├─ PROJECT_COMPLETE.md    Project overview
+   ├─ PROJECT_INDEX.md       File index
+   └─ TECH_REFERENCE.txt     This file
+
+
+DATABASE SCHEMA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TABLE: User
+  ├─ id (Integer, Primary Key)
+  ├─ name (String, Not Null)
+  ├─ email (String, Unique, Not Null)
+  ├─ password_hash (String, Not Null)
+  ├─ role (String, Default='Student')
+  └─ created_at (DateTime, Auto)
+
+TABLE: Subject
+  ├─ id (Integer, Primary Key)
+  ├─ name (String, Not Null)
+  ├─ code (String, Unique)
+  └─ created_at (DateTime, Auto)
+
+TABLE: Attendance
+  ├─ id (Integer, Primary Key)
+  ├─ student_id (Foreign Key → User)
+  ├─ subject_id (Foreign Key → Subject)
+  ├─ date (Date, Not Null)
+  ├─ status (String: 'Present'/'Absent')
+  ├─ Constraint: Unique(student_id, subject_id, date)
+  └─ created_at (DateTime, Auto)
+
+TABLE: Engagement
+  ├─ id (Integer, Primary Key)
+  ├─ student_id (Foreign Key → User)
+  ├─ subject_id (Foreign Key → Subject)
+  ├─ date (Date, Not Null)
+  ├─ tag (String: 'Good'/'Needs Improvement'/'Excellent')
+  ├─ note (Text)
+  └─ created_at (DateTime, Auto)
+
+
+API ROUTES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AUTHENTICATION
+  POST   /signup              Create new account
+  POST   /login               Login with credentials
+  GET    /logout              Logout (clears session)
+
+DASHBOARD
+  GET    /                    Main dashboard (requires login)
+  GET    /api/attendance-by-subject   Chart data (JSON)
+  GET    /api/monthly-trend           Chart data (JSON)
+  GET    /api/engagement-distribution Chart data (JSON)
+
+ATTENDANCE MANAGEMENT
+  GET    /attendance          View attendance form
+  POST   /attendance          Add attendance record
+  PUT    /attendance/<id>     Update attendance
+  DELETE /attendance/<id>     Delete attendance
+
+ENGAGEMENT TRACKING
+  GET    /engagement          View engagement form
+  POST   /engagement          Add engagement note
+  PUT    /engagement/<id>     Update engagement
+  DELETE /engagement/<id>     Delete engagement
+
+STUDENT MANAGEMENT
+  GET    /students            List all students
+  GET    /student/<id>        View student details
+  GET    /student/<id>/csv    Export student data
+
+SETTINGS
+  GET    /settings            User profile settings
+  POST   /settings            Update profile
+
+
+CSS COLOR PALETTE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Primary Colors:
+  --primary:         #3B82F6 (Blue)
+  --secondary:       #8B5CF6 (Purple)
+  --success:         #10B981 (Green)
+  --warning:         #F59E0B (Orange)
+  --danger:          #EF4444 (Red)
+  --info:            #06B6D4 (Cyan)
+  --violet:          #8B5CF6 (Violet)
+  --pink:            #EC4899 (Pink)
+  --orange:          #FF9500 (Orange)
+  --emerald:         #14B8A6 (Emerald)
+
+Light Variants (used for hover/background):
+  --primary-light:   #DBEAFE
+  --success-light:   #DCFCE7
+  --warning-light:   #FEF3C7
+  --danger-light:    #FEE2E2
+  --info-light:      #CFFAFE
+  --violet-light:    #EDE9FE
+  --pink-light:      #FCE7F3
+  --orange-light:    #FFECDC
+  --emerald-light:   #CCFBF1
+
+Dark Variants (used for text/borders):
+  --primary-dark:    #1E40AF
+  --success-dark:    #065F46
+  --warning-dark:    #92400E
+  --danger-dark:     #7F1D1D
+  --info-dark:       #155E75
+  --violet-dark:     #5B21B6
+  --pink-dark:       #831843
+  --orange-dark:     #7C2D12
+  --emerald-dark:    #0D9488
+
+Grayscale:
+  --text-dark:       #1F2937 (Dark gray for text)
+  --text-light:      #6B7280 (Light gray for secondary text)
+  --border:          #E5E7EB (Light gray for borders)
+  --bg-light:        #F9FAFB (Off-white for backgrounds)
+  --white:           #FFFFFF
+
+
+STAT CARD CLASSES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use these classes on stat cards for colors:
+
+  .stat-card.success-bg   → Green gradient background
+  .stat-card.warning-bg   → Orange gradient background  
+  .stat-card.danger-bg    → Red gradient background
+  .stat-card.violet-bg    → Violet gradient background
+  .stat-card.info-bg      → Cyan gradient background
+
+Example HTML:
+  <div class="stat-card danger-bg">
+    <div class="stat-label">Pending Records</div>
+    <div class="stat-value">5</div>
+  </div>
+
+
+JAVASCRIPT KEY FUNCTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Chart Functions:
+  renderAttendanceBySubjectChart()    Creates bar chart from API data
+  renderMonthlyTrendChart()           Creates line chart from API data
+  renderEngagementDistributionChart() Creates pie chart from API data
+
+Utility Functions:
+  validateForm()                       Validates form inputs client-side
+  switchTab()                          Tab switching on pages
+  searchStudents()                     Student search functionality
+  toggleModal()                        Show/hide modal dialogs
+
+
+FLASK PYTHON KEY FUNCTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Database Functions:
+  init_db()                           Initialize database with tables
+  init_sample_data()                  Add demo data
+  
+Authentication:
+  hash_password(password)             Hash password with Werkzeug
+  check_password(hash, password)      Verify password
+  
+Data Access:
+  get_attendance_by_subject(type)     Get chart data
+  get_monthly_trend(type)             Get chart data
+  get_engagement_distribution(type)   Get chart data
+
+Export:
+  export_student_data(student_id)     Export to CSV
+
+
+SECURITY FEATURES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Authentication:
+  ✅ Password hashing with Werkzeug
+  ✅ Flask sessions for authenticated users
+  ✅ @login_required decorator on protected routes
+
+Authorization:
+  ✅ Role-based access control (Faculty/Student)
+  ✅ Only faculty can access admin functions
+  ✅ Students can only view their own data
+
+Data Validation:
+  ✅ Email validation on signup
+  ✅ Required field validation
+  ✅ Unique constraints in database
+
+Error Handling:
+  ✅ Custom 404 error page
+  ✅ Custom 500 error page
+  ✅ Flash messages for user feedback
+
+
+DEPENDENCIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Backend:
+  Flask==2.3.3              Web framework
+  Flask-SQLAlchemy==3.0.5   ORM integration
+  Werkzeug==2.3.7           Security, utilities
+  python-dotenv==1.0.0      Environment variables
+
+Frontend:
+  Chart.js==3.9.1           Chart rendering (via CDN)
+  Google Fonts              Typography (via CDN)
+
+Note: pandas was REMOVED (not needed - using built-in csv module)
+
+
+STARTUP SCRIPT ARCHITECTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+run.py (500+ lines, Universal launcher):
+  1. Detects OS (Windows/Mac/Linux)
+  2. Finds or creates virtual environment
+  3. Upgrades pip
+  4. Installs packages individually with fallback
+  5. Initializes database if needed
+  6. Starts Flask app at http://127.0.0.1:5000
+
+START.bat (Windows only):
+  → Calls run.py with display settings
+
+run.sh (Mac/Linux):
+  → Calls run.py with Unix settings
+
+
+CUSTOMIZATION POINTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Change Application Title:
+  File: app.py, Line: app.config['TITLE'] = '...'
+
+Change Default Port:
+  File: run.py, Line: app.run(port=5000)
+       or
+       app.py last line: app.run(debug=True, port=5000)
+
+Change Colors:
+  File: static/css/styles.css
+  Update: --primary, --success, --warning, --danger, etc.
+
+Add New Routes:
+  File: app.py
+  Pattern: @app.route('/path', methods=['GET', 'POST'])
+           def function_name():
+
+Add New Database Fields:
+  File: models.py
+  Add: new column to model class
+        models.py needs updating when database changes
+        Delete attendance.db to reset
+
+
+COMMON MODIFICATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Change the page title:
+  app.py Line 15: @app.context_processor
+                  def inject_config():
+                  return dict(app_name='...')
+
+Add a new subject to database:
+  1. Login and go to database (current: done in init_sample_data)
+  2. Or modify init_sample_data() in app.py
+  3. Delete attendance.db and restart
+
+Change the theme colors:
+  File: static/css/styles.css
+  Search: --primary: #3B82F6
+  Replace: --primary: #[your hex color]
+
+Add a new navigation link:
+  File: templates/base.html
+  Add: <a href="{{ url_for('route_name') }}">Link Text</a>
+
+Enable debug mode (for development):
+  File: run.py, Line 300 (approximately): app.run(debug=True)
+
+
+DEBUGGING TIPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Check server is running:
+  → Look for: "Running on http://127.0.0.1:5000"
+
+Check database created:
+  → Look for: attendance.db file in project root
+  → Size should be > 100KB
+
+Check routes working:
+  → Open: http://127.0.0.1:5000/api/attendance-by-subject
+  → Should return JSON data
+
+Check JavaScript console (Browser):
+  → Press F12 → Console tab
+  → Look for red error messages
+
+Check Python console (Terminal):
+  → Look for red error messages when requests happen
+  → Check for SQL errors
+
+Enable Flask debug mode:
+  File: app.py, last line
+  Change: app.run(debug=True)
+  Benefit: Auto-reload on file changes
+
+
+PERFORMANCE OPTIMIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For better performance:
+
+1. Database Indexing
+   Add to models.py for frequently queried fields:
+   __table_args__ = (Index('idx_student_id', 'student_id'),)
+
+2. Caching
+   Add: from flask_caching import Cache
+        cache = Cache(app, config={'CACHE_TYPE': 'simple'})
+        @app.route(...)
+        @cache.cached(timeout=300)
+
+3. Lazy Loading
+   Already implemented in chart API endpoints
+   Returns only needed data, not full records
+
+4. Database Pagination
+   For large student lists:
+   Add LIMIT/OFFSET to queries
+
+5. Static File Compression
+   Enable GZIP in production
+
+
+FILE SIZE GUIDE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After successful startup:
+
+  app.py                  ~500 KB (main application)
+  models.py               ~100 KB (database models)
+  styles.css              ~1000 KB (CSS styles)
+  script.js               ~300 KB (JavaScript)
+  attendance.db           ~200-500 KB (database file)
+  venv/                   ~100 MB (virtual environment)
+  
+Total: ~100 MB including venv
+
+
+ENDPOINTS TESTING WITH CURL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Test API endpoints:
+
+# Get attendance chart data
+curl -X GET http://127.0.0.1:5000/api/attendance-by-subject
+
+# Get monthly trend data
+curl -X GET http://127.0.0.1:5000/api/monthly-trend
+
+# Get engagement distribution data
+curl -X GET http://127.0.0.1:5000/api/engagement-distribution
+
+
+ENVIRONMENT VARIABLES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create a .env file in root directory to override defaults:
+
+  FLASK_ENV=development
+  FLASK_DEBUG=True
+  SECRET_KEY=your-secret-key-here
+  DATABASE_URL=sqlite:///attendance.db
+
+Or use defaults in app.py:
+  app.config['SECRET_KEY'] = 'dev-secret-key'
+  app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///attendance.db'
+
+
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                     🏗️ REFERENCE GUIDE COMPLETE                            ║
+║                                                                              ║
+║      For more help, check README.md or DEVELOPMENT.md                       ║
+║                                                                              ║
+╚════════════════════════════════════════════════════════════════════════════════╝

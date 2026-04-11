@@ -1,0 +1,90 @@
+# RAILWAY.APP SETUP - QUICK START
+
+## Files Created for You ✅
+
+```
+student-tracker/
+├── Procfile                    ← How Railway runs your app
+├── runtime.txt                 ← Python 3.11 (compatible version)
+├── requirements.txt            ← Minimal dependencies (fixed)
+├── .streamlit/
+│   └── config.toml            ← Streamlit cloud settings
+├── streamlit_app.py           ← Your app (unchanged)
+├── attendance.db              ← Your database (unchanged)
+├── deploy-railway.bat         ← Windows deployment script
+├── deploy-railway.sh          ← Linux/Mac deployment script
+└── RAILWAY_DEPLOYMENT.md      ← Full documentation
+```
+
+## ⚡ Fastest Path to Deployment (3 Steps)
+
+### Step 1: Copy Files to Your Project
+Copy these files to your `d:\Downloads\python_cec` (or wherever your student-tracker is):
+- `Procfile`
+- `runtime.txt`
+- `requirements.txt`
+- `.streamlit/config.toml`
+- `deploy-railway.bat` (if on Windows)
+
+### Step 2: Run Deployment Script
+**Windows Users:**
+```powershell
+cd "d:\path\to\your\student-tracker"
+.\deploy-railway.bat
+```
+
+**Mac/Linux Users:**
+```bash
+cd ~/path/to/your/student-tracker
+bash deploy-railway.sh
+```
+
+**Manual (if scripts don't work):**
+```bash
+git add Procfile runtime.txt requirements.txt .streamlit/
+git commit -m "Add Railway.app deployment configuration"
+git push origin main
+```
+
+### Step 3: Deploy on Railway.app
+1. Visit https://railway.app
+2. Sign up / Log in (can use GitHub)
+3. Click **"New Project"**
+4. Select **"Deploy from GitHub"**
+5. Choose **"chitransh24god/student-tracker"**
+6. Click **"Deploy"**
+7. Wait 2-3 minutes ⏳
+8. Your app is LIVE! 🚀
+
+## ✨ Why Railway.app is Better Than Streamlit Cloud
+
+| Feature | Streamlit Cloud | Railway.app |
+|---------|-----------------|------------|
+| Python Support | 3.14 (broken) | 3.11 (✅ works) |
+| Deploy Method | GitHub | GitHub (auto) |
+| Uptime | Sleeps after 15 min | Always on |
+| Free Tier | Limited | $5/month credit |
+| Build Speed | Slow (pandas issues) | Fast (3-5 min) |
+| Custom Port | No | ✅ Yes |
+
+## 📊 What You'll Get
+
+When deployed on Railway:
+- **URL:** `https://student-tracker-abc123.railway.app`
+- **Features:** All working (no Python 3.14 issues)
+- **Performance:** Fast & reliable
+- **Cost:** ~$0.02/month on free tier
+
+## 🔗 Important Links
+
+- Railway.app: https://railway.app
+- Docs: https://docs.railway.app
+- Dashboard: https://railway.app/dashboard
+
+## ❓ Questions?
+
+Check `RAILWAY_DEPLOYMENT.md` for detailed troubleshooting
+
+---
+
+**Ready?** Just run `deploy-railway.bat` and wait! 🎉
