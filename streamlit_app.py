@@ -1,15 +1,335 @@
 import streamlit as st
-import pandas as pd
 import sqlite3
 from datetime import datetime, timedelta
-import plotly.graph_objects as go
-import plotly.express as px
 from sqlalchemy import create_engine, text
 from werkzeug.security import check_password_hash, generate_password_hash
 import os
 
 # Page config
 st.set_page_config(page_title="Student Tracker", layout="wide", initial_sidebar_state="expanded")
+
+# Initialize database
+DB_PATH = "attendance.db"
+engine = create_engine(f"sqlite:///{DB_PATH}")
+
+# Custom CSS
+st.markdown("""
+<style>
+    .main { padding: 1rem; }
+    .stButton button { width: 100%; }
+</style>
+""", unsafe_allow_html=True)
+
+def get_user_by_email(email):
+    """Get user by email"""
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(text("SELECT * FROM users WHERE email = :email"), {"email": email})
+            row = result.fetchone()
+            if row:
+                return dict(row._mapping)
+    except:
+        pass
+    return None
+
+def verify_password(stored_hash, password):
+    """Verify password"""
+    return check_password_hash(stored_hash, password)
+
+def login_page():
+    """Login page"""
+    st.title("📊 Student Attendance & Engagement Tracker")
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.markdown("### Login")
+        
+        email = st.text_input("Email")
+        password = st.text_input("Password", type="password")
+        role = st.selectbox("Login As", ["Student", "Teacher", "Admin"])
+        
+        if st.button("Login", use_container_width=True):
+            if email and password:
+                user = get_user_by_email(email)
+                
+                if user:
+                    role_map = {'Student': 'student', 'Teacher': 'teacher', 'Admin': 'admin'}
+                    if user['role'] == role_map[role]:
+                        if verify_password(user['password_hash'], password):
+                            st.session_state.user_id = user['id']
+                            st.session_state.user_email = user['email']
+                            st.session_state.user_name = user['name']
+                            st.session_state.user_role = user['role']
+                            st.success(f"Welcome {user['name']}!")
+                            st.rerun()
+                        else:
+                            st.error("Invalid password")
+                    else:
+                        st.error(f"This account is a {user['role']}, not {role}")
+                else:
+                    st.error("Email not found")
+            else:
+                st.error("Please enter email and password")
+        
+        st.markdown("---")
+        st.info("📝 Demo Credentials:\n- **Admin**: admin@example.com  /  Admin@123\n- **Teacher**: teacher1@example.com  /  Teacher@123\n- **Student**: student1@example.com  /  Student@123")
+
+def dashboard_page():
+    """Dashboard page"""
+    st.title(f"📊 Dashboard - Welcome {st.session_state.user_name}")
+    
+    try:
+        with engine.connect() as conn:
+            user_result = conn.execute(text("SELECT * FROM users WHERE id = :id"), {"id": st.session_state.user_id})
+            user = dict(user_result.fetchone()._mapping)
+        
+        if user['role'] == 'student':
+            st.subheader("Your Attendance & Engagement Overview")
+            
+            with engine.connect() as conn:
+                att_result = conn.execute(text("""
+                    SELECT COUNT(*) as total, SUM(CASE WHEN status='Present' THEN 1 ELSE 0 END) as present
+                    FROM attendance WHERE student_id = :id
+                """), {"id": st.session_state.user_id})
+                att_data = dict(att_result.fetchone()._mapping)
+                
+                eng_result = conn.execute(text("""
+                    SELECT COUNT(*) as total FROM engagement WHERE student_id = :id
+                """), {"id": st.session_state.user_id})
+                eng_data = dict(eng_result.fetchone()._mapping)
+            
+            col1, col2, col3, col4 = st.columns(4)
+            
+            total_classes = att_data['total'] or 0
+            attended = att_data['present'] or 0
+            attendance_pct = (attended / total_classes * 100) if total_classes > 0 else 0
+            
+            with col1:
+                st.metric("Total Classes", total_classes)
+            with col2:
+                st.metric("Classes Attended", attended)
+            with col3:
+                st.metric("Attendance %", f"{attendance_pct:.1f}%")
+            with col4:
+                st.metric("Engagement Records", eng_data['total'] or 0)
+        
+        elif user['role'] in ['teacher', 'admin']:
+            st.subheader("Dashboard Overview")
+            
+            with engine.connect() as conn:
+                students_result = conn.execute(text("SELECT COUNT(*) as count FROM users WHERE role='student'"))
+                teachers_result = conn.execute(text("SELECT COUNT(*) as count FROM users WHERE role='teacher'"))
+                att_result = conn.execute(text("SELECT COUNT(*) as count FROM attendance"))
+                eng_result = conn.execute(text("SELECT COUNT(*) as count FROM engagement"))
+                
+                students_count = dict(students_result.fetchone()._mapping)['count']
+                teachers_count = dict(teachers_result.fetchone()._mapping)['count']
+                att_count = dict(att_result.fetchone()._mapping)['count']
+                eng_count = dict(eng_result.fetchone()._mapping)['count']
+            
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("Total Students", students_count)
+            with col2:
+                st.metric("Total Teachers", teachers_count)
+            with col3:
+                st.metric("Attendance Records", att_count)
+            with col4:
+                st.metric("Engagement Records", eng_count)
+    except Exception as e:
+        st.error(f"Error loading dashboard: {str(e)}")
+
+def attendance_page():
+    """Add attendance"""
+    st.title("📝 Add Attendance")
+    
+    try:
+        with engine.connect() as conn:
+            subjects_result = conn.execute(text("SELECT id, name FROM subjects"))
+            subjects = [dict(row._mapping) for row in subjects_result.fetchall()]
+            
+            students_result = conn.execute(text("SELECT id, name FROM users WHERE role='student' ORDER BY name"))
+            students = [dict(row._mapping) for row in students_result.fetchall()]
+        
+        if not students:
+            st.warning("No students found")
+            return
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            student_id = st.selectbox("Student", [{"id": s['id'], "name": s['name']} for s in students], 
+                                       format_func=lambda x: x['name'])
+        
+        with col2:
+            subject_id = st.selectbox("Subject", [(s['id'], s['name']) for s in subjects],
+                                       format_func=lambda x: x[1])
+        
+        date = st.date_input("Date")
+        status = st.radio("Status", ["Present", "Absent"])
+        
+        if st.button("Save Attendance", use_container_width=True):
+            try:
+                with engine.begin() as conn:
+                    conn.execute(text("""
+                        INSERT OR REPLACE INTO attendance (student_id, subject_id, date, status)
+                        VALUES (:student_id, :subject_id, :date, :status)
+                    """), {
+                        "student_id": student_id['id'],
+                        "subject_id": subject_id[0],
+                        "date": date,
+                        "status": status
+                    })
+                st.success("✅ Attendance saved!")
+            except Exception as e:
+                st.error(f"Error: {str(e)}")
+    except Exception as e:
+        st.error(f"Error: {str(e)}")
+
+def engagement_page():
+    """Add engagement"""
+    st.title("💬 Add Engagement")
+    
+    try:
+        with engine.connect() as conn:
+            subjects_result = conn.execute(text("SELECT id, name FROM subjects"))
+            subjects = [dict(row._mapping) for row in subjects_result.fetchall()]
+            
+            students_result = conn.execute(text("SELECT id, name FROM users WHERE role='student' ORDER BY name"))
+            students = [dict(row._mapping) for row in students_result.fetchall()]
+        
+        if not students:
+            st.warning("No students found")
+            return
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            student_id = st.selectbox("Student", [{"id": s['id'], "name": s['name']} for s in students], 
+                                       format_func=lambda x: x['name'], key="engagement_student")
+        
+        with col2:
+            subject_id = st.selectbox("Subject", [(s['id'], s['name']) for s in subjects],
+                                       format_func=lambda x: x[1], key="engagement_subject")
+        
+        date = st.date_input("Date", key="engagement_date")
+        tag = st.selectbox("Tag", ["Active Participation", "Excellent Work", "Needs Improvement", "Absent", "Late Submission", "Others"])
+        note = st.text_area("Note (optional)")
+        
+        if st.button("Save Engagement", use_container_width=True):
+            try:
+                with engine.begin() as conn:
+                    conn.execute(text("""
+                        INSERT INTO engagement (student_id, subject_id, date, tag, note)
+                        VALUES (:student_id, :subject_id, :date, :tag, :note)
+                    """), {
+                        "student_id": student_id['id'],
+                        "subject_id": subject_id[0],
+                        "date": date,
+                        "tag": tag,
+                        "note": note
+                    })
+                st.success("✅ Engagement saved!")
+            except Exception as e:
+                st.error(f"Error: {str(e)}")
+    except Exception as e:
+        st.error(f"Error: {str(e)}")
+
+def students_page():
+    """View and manage students"""
+    st.title("👥 Students")
+    
+    try:
+        search = st.text_input("Search students by name or email")
+        
+        with engine.connect() as conn:
+            if search:
+                query = text("""
+                    SELECT id, name, email, role, created_at FROM users 
+                    WHERE role='student' AND (name LIKE :search OR email LIKE :search)
+                    ORDER BY name
+                """)
+                result = conn.execute(query, {"search": f"%{search}%"})
+            else:
+                query = text("SELECT id, name, email, role, created_at FROM users WHERE role='student' ORDER BY name")
+                result = conn.execute(query)
+            
+            students_data = [dict(row._mapping) for row in result.fetchall()]
+        
+        if students_data:
+            for student in students_data:
+                with st.expander(f"📋 {student['name']}"):
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        st.write(f"**Email:** {student['email']}")
+                        st.write(f"**Role:** {student['role']}")
+                    
+                    with col2:
+                        st.write(f"**Joined:** {student['created_at']}")
+                    
+                    with engine.connect() as conn:
+                        att_result = conn.execute(text("""
+                            SELECT a.*, s.name as subject_name FROM attendance a
+                            JOIN subjects s ON a.subject_id = s.id
+                            WHERE a.student_id = :id ORDER BY a.date DESC LIMIT 10
+                        """), {"id": student['id']})
+                        att_data = [dict(row._mapping) for row in att_result.fetchall()]
+                    
+                    if att_data:
+                        st.write("**Recent Attendance:**")
+                        for att in att_data:
+                            status_emoji = "✅" if att['status'] == 'Present' else "❌"
+                            st.caption(f"{status_emoji} {att['subject_name']} - {att['date']} ({att['status']})")
+        else:
+            st.info("No students found")
+    except Exception as e:
+        st.error(f"Error: {str(e)}")
+
+def settings_page():
+    """Settings page"""
+    st.title("⚙️ Settings")
+    
+    try:
+        st.subheader("👤 Profile Information")
+        st.write(f"**Name:** {st.session_state.user_name}")
+        st.write(f"**Email:** {st.session_state.user_email}")
+        st.write(f"**Role:** {st.session_state.user_role.title()}")
+    except Exception as e:
+        st.error(f"Error: {str(e)}")
+
+def main():
+    """Main app"""
+    if 'user_id' not in st.session_state:
+        login_page()
+    else:
+        st.sidebar.title(f"👤 {st.session_state.user_name}")
+        st.sidebar.subheader(f"Role: {st.session_state.user_role.title()}")
+        st.sidebar.markdown("---")
+        
+        if st.session_state.user_role == 'student':
+            page = st.sidebar.radio("Menu", ["Dashboard", "Settings", "Logout"])
+        else:
+            page = st.sidebar.radio("Menu", ["Dashboard", "➕ Attendance", "💬 Engagement", "👥 Students", "⚙️ Settings", "Logout"])
+        
+        if page == "Dashboard":
+            dashboard_page()
+        elif page == "➕ Attendance":
+            attendance_page()
+        elif page == "💬 Engagement":
+            engagement_page()
+        elif page == "👥 Students":
+            students_page()
+        elif page == "⚙️ Settings":
+            settings_page()
+        elif page == "Logout":
+            st.session_state.clear()
+            st.success("Logged out successfully!")
+            st.rerun()
+
+if __name__ == "__main__":
+    main()
+
 
 # Initialize database
 DB_PATH = "attendance.db"
